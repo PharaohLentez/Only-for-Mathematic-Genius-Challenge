@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Only for Mathematic Genius Challenges</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #FFD700, #D4AF37); /* Gold gradient */
+            color: black; /* Text color changed to black */
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.7); /* Dark background for contrast */
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .problem {
+            font-size: 2rem;
+            margin: 1rem 0;
+            color: white; /* Problem text in white for visibility */
+        }
+
+        input {
+            padding: 0.5rem;
+            font-size: 1.2rem;
+            width: 120px;
+            margin: 1rem 0;
+            border: none;
+            border-radius: 5px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9); /* Light background for input */
+            color: black; /* Input text color */
+        }
+
+        button {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #388e3c;
+        }
+
+        .score, .level {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            color: white; /* Text color for visibility */
+        }
+
+        .message {
+            height: 1.5rem;
+            margin: 1rem 0;
+            color: #FFD700; /* Gold for messages */
+        }
+
+        .timer {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: white; /* Timer text color */
+        }
+
+        .streak {
+            color: #FFD700; /* Gold for streak */
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+
+        .progress {
+            height: 100%;
+            background: #4caf50;
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Only for Mathematic Genius Challenges</h1>
+        <div class="timer">Time: <span id="time">45</span>s</div>
+        <div class="level">Level: <span id="level">1</span></div>
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        <div class="problem" id="problem"></div>
+        <input type="number" id="answer" placeholder="Answer">
+        <br>
+        <button onclick="checkAnswer()">Submit</button>
+        <div class="message" id="message"></div>
+        <div class="score">Score: <span id="score">0</span></div>
+        <div class="streak">Streak: <span id="streak">0</span></div>
+    </div>
+
+    <script>
+        let currentAnswer;
+        let score = 0;
+        let timeLeft = 45;
+        let timer;
+        let level = 1;
+        let streak = 0;
+        let correctAnswersForNextLevel = 3;
+        let answersInCurrentLevel = 0;
+
+        function getRandomNumber(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateProblem() {
+            const operators = level >= 3 ? ['+', '-', '*', '/', '^'] : 
+                            level >= 2 ? ['+', '-', '*', '/'] : 
+                            ['+', '-', '*'];
+            
+            let operator = operators[Math.floor(Math.random() * operators.length)];
+            let num1, num2, num3;
+
+            switch(level) {
+                case 1:
+                    num1 = getRandomNumber(1, 50);
+                    num2 = getRandomNumber(1, 50);
+                    break;
+                case 2:
+                    num1 = getRandomNumber(10, 100);
+                    num2 = getRandomNumber(10, 100);
+                    break;
+                case 3:
+                    num1 = getRandomNumber(50, 200);
+                    num2 = getRandomNumber(50, 200);
+                    break;
+                case 4:
+                    // Three number operations
+                    num1 = getRandomNumber(10, 100);
+                    num2 = getRandomNumber(10, 100);
+                    num3 = getRandomNumber(10, 100);
+                    break;
+                default:
+                    num1 = getRandomNumber(100, 500);
+                    num2 = getRandomNumber(100, 500);
+                    num3 = getRandomNumber(10, 100);
+            }
+
+            let problem, answer;
+
+            if (level >= 4) {
+                // Complex problems with three numbers
+                const secondOperator = operators[Math.floor(Math.random() * operators.length)];
+                problem = `${num1} ${operator} ${num2} ${secondOperator} ${num3}`;
+                answer = eval(problem.replace('^', '**'));
+            } else {
+                switch(operator) {
+                    case '+':
+                        problem = `${num1} + ${num2}`;
+                        answer = num1 + num2;
+                        break;
+                    case '-':
+                        if (num1 < num2) [num1, num2] = [num2, num1]; // Ensure positive result
+                        problem = `${num1} - ${num2}`;
+                        answer = num1 - num2;
+                        break;
+                    case '*':
+                        num1 = level === 1 ? getRandomNumber(2, 12) : num1;
+                        num2 = level === 1 ? getRandomNumber(2, 12) : num2;
+                        problem = `${num1} × ${num2}`;
+                        answer = num1 * num2;
+                        break;
+                    case '/':
+                        num2 = getRandomNumber(2, 12);
+                        num1 = num2 * getRandomNumber(2, 12); // Ensure clean division
+                        problem = `${num1} ÷ ${num2}`;
+                        answer = num1 / num2;
+                        break;
+                    case '^':
+                        num1 = getRandomNumber(2, 10);
+                        num2 = getRandomNumber(2, 3);
+                        problem = `${num1}^${num2}`;
+                        answer = Math.pow(num1, num2);
+                        break;
+                }
+            }
+
+            currentAnswer = Math.round(answer * 100) / 100; // Round to 2 decimal places
+            document.getElementById('problem').textContent = `${problem} = ?`;
+            document.getElementById('answer').value = '';
+            document.getElementById('message').textContent = '';
+        }
+
+        function updateLevel() {
+            answersInCurrentLevel++;
+            const progress = (answersInCurrentLevel / correctAnswersForNextLevel) * 100;
+            document.getElementById('progress').style.width = `${progress}%`;
+
+            if (answersInCurrentLevel >= correctAnswersForNextLevel) {
+                level++;
+                answersInCurrentLevel = 0;
+                correctAnswersForNextLevel = Math.min(correctAnswersForNextLevel + 2, 10);
+                document.getElementById('level').textContent = level;
+                document.getElementById('progress').style.width = '0%';
+                document.getElementById('message').textContent = `Level ${level} Unlocked! 🎉`;
+                timeLeft += 10; // Bonus time for level up
+            }
+        }
+
+        function checkAnswer() {
+            const userAnswer = parseFloat(document.getElementById('answer').value);
+            const messageElement = document.getElementById('message');
+
+            if (isNaN(userAnswer)) {
+                messageElement.textContent = 'Please enter a number!';
+                return;
+            }
+
+            if (Math.abs(userAnswer - currentAnswer) < 0.01) { // Allow small floating point differences
+                streak++;
+                const bonus = Math.floor(streak / 3) * 5; // Extra points for streaks
+                score += 10 + bonus;
+                messageElement.textContent = `Correct! +${10 + bonus} points`;
+                document.getElementById('score').textContent = score;
+                document.getElementById('streak').textContent = streak;
+                updateLevel();
+                generateProblem();
+                timeLeft += 2; // Add 2 seconds for correct answer
+                document.getElementById('time').textContent = timeLeft;
+            } else {
+                streak = 0;
+                messageElement.textContent = `Wrong! The answer was ${currentAnswer}`;
+                document.getElementById('streak').textContent = streak;
+                score = Math.max(0, score - 5);
+                document.getElementById('score').textContent = score;
+            }
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            document.getElementById('time').textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                document.getElementById('message').textContent = 
+                    `Game Over! Final Score: ${score}, Highest Level: ${level}`;
+                document.getElementById('answer').disabled = true;
+                document.querySelector('button').disabled = true;
+            }
+        }
+
+        // Start game
+        generateProblem();
+        timer = setInterval(updateTimer, 1000);
+
+        // Add enter key support
+        document.getElementById('answer').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+    </script>
+</body>
+</html>
